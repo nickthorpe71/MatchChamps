@@ -9,9 +9,21 @@ struct gameBoardCell
 }
 inputValue();
 
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define RESET "\x1B[0m"
+
+const char P1TOKEN = '1';
+const char P2TOKEN = '2';
+
 const int WINLENGTH = 3;
-const int HEIGHT = 3;
-const int WIDTH = 3;
+const int HEIGHT = 4;
+const int WIDTH = 4;
 
 void run();
 void Display(char**);
@@ -67,22 +79,23 @@ void run()
 
 char **initializeBoard()
 {
-	int currentNumber = 1;
-	char **board = malloc(sizeof(char*) * HEIGHT); 
-	for(int i = 0; i < HEIGHT; i++) 
-	{
-		board[i] = malloc(sizeof(char*) * WIDTH);
-	}
+	int i,j;
 
-	for(int i = 0; i < HEIGHT; i++)
-	{
-		for(int j = 0; j < WIDTH; j++)
+	char currentNumberAsChar = 'a';
+	char **board = malloc(sizeof(char*) * HEIGHT);
+
+	for (i = 0; i < HEIGHT; i++) 
+		board[i] = malloc(sizeof(char*) * WIDTH);
+
+	for (i = 0; i < HEIGHT; i++)
+		for(j = 0; j < WIDTH; j++)
 		{
-			char currentNumberAsChar = currentNumber + '0';
 			board[i][j] = currentNumberAsChar;
-			currentNumber++;
+			if (currentNumberAsChar == 'z')
+				currentNumberAsChar = 'A';
+			else
+				currentNumberAsChar++;
 		}
-	}
 
 	return board;
 }
@@ -148,11 +161,11 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 	inputAgain:
 	if (turnCount%2 == 0)
 	{
-		printf("\nEnter your choice X:");
+		printf("\nEnter your choice Player %c:", P1TOKEN);
 	} 
 	else 
 	{
-		printf("\nEnter your choice O:");
+		printf("\nEnter your choice Player %c:", P2TOKEN);
 	}
 
 	scanf("%s", &value); 
@@ -167,11 +180,11 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 				cellInfo.positionWidth = j;
 				if(turnCount%2 == 0)
 				{
-					cellInfo.character = 'X';
+					cellInfo.character = P1TOKEN;
 				}
 				else
 				{
-					cellInfo.character = 'O';
+					cellInfo.character = P2TOKEN;
 				}
 				return cellInfo;
 			}
@@ -194,14 +207,50 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 
 void Display(char **board) 
 {
-	printf("\t\t\tTIC    TAC    TOE\n");
-	printf( "\n\t\t\t     |     |     ");
-	printf("\n\t\t\t  %c  |  %c  |  %c  ",board[0][0],board[0][1],board[0][2]);
-	printf( "\n\t\t\t-----|-----|-----");
-	printf("\n\t\t\t  %c  |  %c  |  %c  ",board[1][0],board[1][1],board[1][2]);
-        printf( "\n\t\t\t-----|-----|-----");	
-	printf("\n\t\t\t  %c  |  %c  |  %c  ",board[2][0],board[2][1],board[2][2]);
-	printf( "\n\t\t\t     |     |     \n");
-	printf("Player 1 Symbol: X\n");
-	printf("Player 2 Symbol: O\n");
+	int i,j;
+
+	printf("\n");
+
+	for (i = 0; i < WIDTH - 1; i++)
+		printf("\t    ");
+
+	printf("%sTIC     TAC     MOE%s\n\n", CYN, RESET);
+	
+	for (i = 0; i < WIDTH - 1; i++)
+		printf("\t    ");
+
+	printf(" Length to win : %s%d%s\n\n", GRN, WINLENGTH, RESET);
+
+	for (i = 0; i < HEIGHT; i++)
+	{
+		for (j = 0; j < WIDTH; j++)
+			if (j == 0)
+				printf("\n\t\t\t|-----|");
+			else
+				printf("|-----|");
+
+		for (j = 0; j < WIDTH; j++)
+		{
+			if (j == 0)
+                		printf("\n\t\t\t");
+
+			if (board[i][j] == P1TOKEN)
+				printf("|  %s%c%s  |", RED, board[i][j], RESET);	
+			else if(board[i][j] == P2TOKEN)
+				printf("|  %s%c%s  |", BLU, board[i][j], RESET);
+			else
+				printf("|  %c  |", board[i][j]);
+		}
+
+		if (i == WIDTH - 1)
+		{
+			for (j = 0; j < WIDTH; j++)
+                		if (j == 0)
+                			printf("\n\t\t\t|-----|");
+                		else
+                			printf("|-----|");
+			printf("\n");
+		}
+
+	}
 }
