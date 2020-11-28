@@ -22,8 +22,8 @@ const char P1TOKEN = '1';
 const char P2TOKEN = '2';
 
 const int WINLENGTH = 3;
-const int HEIGHT = 4;
-const int WIDTH = 4;
+const int HEIGHT = 7;
+const int WIDTH = 7;
 
 void run();
 void Display(char**);
@@ -112,18 +112,19 @@ int checkBoard(char **board, char input, int turnCount)
 		for (j = 0; j < WIDTH; j++)
 		{
 			if (board[i][j] == input)
-			{
 				rowCounter++;
-			}
+			else
+				rowCounter = 0;
+
 			if (board[j][i] == input)
-			{
 				columnCounter++;
-			}
+			else
+				columnCounter = 0;
 		}
 
 		if (rowCounter == WINLENGTH || columnCounter == WINLENGTH)
 		{
-			printf("%c WINS!!!", input);
+			printf("Player %c WINS!!!", input);
 		        return 1;
 		}
 	}
@@ -160,32 +161,28 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 	
 	inputAgain:
 	if (turnCount%2 == 0)
-	{
 		printf("\nEnter your choice Player %c:", P1TOKEN);
-	} 
 	else 
-	{
 		printf("\nEnter your choice Player %c:", P2TOKEN);
-	}
 
-	scanf("%s", &value); 
+	scanf("%s", &value);
 
-	for(i = 0; i < HEIGHT; i++)
+	if (value == P1TOKEN || value == P2TOKEN)
 	{
-		for(j = 0; j < WIDTH; j++)
-		{
-			if(value == board[i][j])
+		printf("\nInput not valid try again");
+		goto inputAgain;
+	}	
+
+	for (i = 0; i < HEIGHT; i++)
+		for (j = 0; j < WIDTH; j++)
+			if (value == board[i][j])
 			{
 				cellInfo.positionHeight = i;
 				cellInfo.positionWidth = j;
-				if(turnCount%2 == 0)
-				{
+				if (turnCount%2 == 0)
 					cellInfo.character = P1TOKEN;
-				}
 				else
-				{
 					cellInfo.character = P2TOKEN;
-				}
 				return cellInfo;
 			}
 			else
@@ -194,14 +191,20 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 				cellInfo.positionWidth = -1;
 				cellInfo.character = ' ';
 			}
-		}
-	}
-	if(cellInfo.positionHeight == -1)
+
+	if (cellInfo.positionHeight == -1)
 	{
-		printf("\nInput is not valid");
+		printf("\nInput not valid try again");
 	        goto inputAgain;
 	}
 	return cellInfo;
+}
+
+void NewLineAndIndent()
+{
+	printf("\n\t\t\t");
+	for (int i = 0; i < WIDTH - 1; i++)
+		printf(" ");
 }
 
 
@@ -209,16 +212,10 @@ void Display(char **board)
 {
 	int i,j;
 
-	printf("\n");
-
-	for (i = 0; i < WIDTH - 1; i++)
-		printf("\t    ");
-
+	NewLineAndIndent();
 	printf("%sTIC     TAC     MOE%s\n\n", CYN, RESET);
 	
-	for (i = 0; i < WIDTH - 1; i++)
-		printf("\t    ");
-
+	NewLineAndIndent();
 	printf(" Length to win : %s%d%s\n\n", GRN, WINLENGTH, RESET);
 
 	for (i = 0; i < HEIGHT; i++)
@@ -236,7 +233,7 @@ void Display(char **board)
 
 			if (board[i][j] == P1TOKEN)
 				printf("|  %s%c%s  |", RED, board[i][j], RESET);	
-			else if(board[i][j] == P2TOKEN)
+			else if (board[i][j] == P2TOKEN)
 				printf("|  %s%c%s  |", BLU, board[i][j], RESET);
 			else
 				printf("|  %c  |", board[i][j]);
