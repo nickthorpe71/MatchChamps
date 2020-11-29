@@ -32,12 +32,14 @@ char **initializeBoard();
 
 int main() 
 {
+	int levelCount = 0;
 	char reStart;
 	again:
 	run();
-	printf("\nTo play again press 1 and enter \notherwise hit any key: ");
+	
+	printf("\nType 'n' and press enter to continue\nor anything else and enter to quit: ");
 	scanf("%s", &reStart);
-	if(reStart == '1')
+	if(reStart == 'n')
 	{
 		system("cls");
 		goto again;
