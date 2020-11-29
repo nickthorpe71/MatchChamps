@@ -22,8 +22,8 @@ const char P1TOKEN = '1';
 const char P2TOKEN = '2';
 
 const int WINLENGTH = 3;
-const int HEIGHT = 4;
-const int WIDTH = 4;
+const int HEIGHT = 6;
+const int WIDTH = 3;
 
 void run();
 void Display(char**);
@@ -33,13 +33,13 @@ char **initializeBoard();
 int main() 
 {
 	int levelCount = 0;
-	char reStart;
+	char continuePrompt;
 	again:
 	run();
 	
 	printf("\nType 'n' and press enter to continue\nor anything else and enter to quit: ");
-	scanf("%s", &reStart);
-	if(reStart == 'n')
+	scanf("%s", &continuePrompt);
+	if(continuePrompt == 'n')
 	{
 		system("cls");
 		goto again;
@@ -53,6 +53,7 @@ int main()
 
 void run() 
 {
+	system("clear");
 	int turnCount = 0;
 	struct gameBoardCell cellInfo;
 	char **board = initializeBoard();
@@ -61,7 +62,7 @@ void run()
 	nextTurn:
 	cellInfo = inputValue(board, turnCount);
 	board[cellInfo.positionHeight][cellInfo.positionWidth] = cellInfo.character;
-	system("cls");
+	system("clear");
 	Display(board);
 	if(checkBoard(board, cellInfo.character, turnCount)==1)
 	{
@@ -102,20 +103,49 @@ char **initializeBoard()
 	return board;
 }
 
+int checkIfPlayerWon(int score, char input)
+{
+	if (score >= WINLENGTH)
+	{
+		printf("Player %c WINS!!!", input);
+		return 1;
+	}
+
+	return 0;
+}
+
 int checkBoard(char **board, char input, int turnCount)
 {
-	// TODO: rework checkBoard into one effecitent loop
 	int i,j,k;
+
+	int rowCounter = 0;
+	int columnCounter = 0;
+
+	int upLeftCounter = 0;
+	int upRightCounter = 0;
+	int downLeftCounter = 0;
+	int downRightCounter = 0;
+	
+	// Check for column matches
+	for (i = 0; i < WIDTH; i++)
+	{
+		columnCounter = 0;
+
+		for(j = 0; j < HEIGHT; j++)
+		{
+			if(board[j][i] == input)
+				columnCounter++;
+			else
+				columnCounter = 0;
+
+			if (checkIfPlayerWon(columnCounter, input) == 1)
+                        	return 1;
+		}
+	}
 	
 	for (i = 0; i < HEIGHT; i++)
 	{
-		int rowCounter = 0;
-		int columnCounter = 0;
-		
-		int upLeftCounter = 0;
-		int upRightCounter = 0;
-		int downLeftCounter = 0;
-                int downRightCounter = 0;
+		rowCounter = 0;
 
 		for (j = 0; j < WIDTH; j++)
 		{
@@ -130,11 +160,8 @@ int checkBoard(char **board, char input, int turnCount)
 			else
 				rowCounter = 0;
 
-			// Check for column match
-			if (board[j][i] == input)
-				columnCounter++;
-			else
-				columnCounter = 0;
+			if (checkIfPlayerWon(rowCounter, input))
+                                return 1;
 
 			for (k = 0; k < WINLENGTH; k++)
 			{
@@ -178,12 +205,6 @@ int checkBoard(char **board, char input, int turnCount)
 	                         return 1;
 	                }
 		}
-
-		if (rowCounter >= WINLENGTH || columnCounter >= WINLENGTH)
-		{
-			printf("Player %c WINS!!!", input);
-		        return 1;
-		}
 	}
 
 	// Check draw
@@ -196,7 +217,7 @@ int checkBoard(char **board, char input, int turnCount)
 	return 0;
 }
 
-// take input
+// Take user input
 struct gameBoardCell inputValue(char **board, int turnCount)
 {
 	int i, j;
@@ -283,7 +304,7 @@ void Display(char **board)
 				printf("|  %c  |", board[i][j]);
 		}
 
-		if (i == WIDTH - 1)
+		if (i == HEIGHT - 1)
 		{
 			for (j = 0; j < WIDTH; j++)
                 		if (j == 0)
