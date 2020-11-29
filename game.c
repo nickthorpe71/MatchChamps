@@ -22,8 +22,8 @@ const char P1TOKEN = '1';
 const char P2TOKEN = '2';
 
 const int WINLENGTH = 3;
-const int HEIGHT = 7;
-const int WIDTH = 7;
+const int HEIGHT = 4;
+const int WIDTH = 4;
 
 void run();
 void Display(char**);
@@ -103,47 +103,89 @@ char **initializeBoard()
 int checkBoard(char **board, char input, int turnCount)
 {
 	// TODO: rework checkBoard into one effecitent loop
-	int i,j;
+	int i,j,k;
 	
 	for (i = 0; i < HEIGHT; i++)
 	{
 		int rowCounter = 0;
 		int columnCounter = 0;
+		
+		int upLeftCounter = 0;
+		int upRightCounter = 0;
+		int downLeftCounter = 0;
+                int downRightCounter = 0;
+
 		for (j = 0; j < WIDTH; j++)
 		{
+			upLeftCounter = 0;   	
+                        upRightCounter = 0;
+                        downLeftCounter = 0;
+                        downRightCounter = 0;
+
+			// Check for row match
 			if (board[i][j] == input)
 				rowCounter++;
 			else
 				rowCounter = 0;
 
+			// Check for column match
 			if (board[j][i] == input)
 				columnCounter++;
 			else
 				columnCounter = 0;
+
+			for (k = 0; k < WINLENGTH; k++)
+			{
+				// Check up left diagonal match
+				if (i - k >= 0 && j - k >= 0)
+				{
+					if (board[i-k][j-k] == input)
+						upLeftCounter++;
+					else
+						upLeftCounter = 0;
+				}
+				// Check up right diagonal match
+				if (i - k >= 0 && j + k < WIDTH)
+				{
+	                       		if (board[i-k][j+k] == input)
+						upRightCounter++;
+					else
+						upRightCounter = 0;
+				}
+				// Check down left diagonal match
+				if (i + k < HEIGHT && j - k >= 0)
+				{
+					if (board[i+k][j-k] == input)
+						downLeftCounter++;
+					else
+						downLeftCounter = 0;
+				}
+				// Check down right diagonal match
+				if (i + k < HEIGHT && j + k < WIDTH)
+				{	
+					if (board[i+k][j+k] == input)
+						downRightCounter++;
+					else 
+						downRightCounter = 0;
+				}
+			}
+			if (upLeftCounter >= WINLENGTH || upRightCounter >= WINLENGTH
+                        || downLeftCounter >= WINLENGTH || downRightCounter >= WINLENGTH)
+                	{
+        	                 printf("Player %c WINS!!!", input);
+	                         return 1;
+	                }
 		}
 
-		if (rowCounter == WINLENGTH || columnCounter == WINLENGTH)
+		if (rowCounter >= WINLENGTH || columnCounter >= WINLENGTH)
 		{
 			printf("Player %c WINS!!!", input);
 		        return 1;
 		}
 	}
 
-	// Diaglonals
-	// TODO: set these checks in a loop to check regardless of size
-	// see if its possible to incorporate into the loop above (likely is)
-	if (board[0][0] == input && board[1][1] == input && board[2][2] == input)
-	{
-		printf("%c WINS!!!", input);
-		return 1;
-	}
-	else if (board[0][2] == input && board[1][1] == input && board[2][0] == input)
-	{		
-		printf("%c WINS!!!", input);
-		return 1;
-	}
 	// Check draw
-	else if (turnCount == WIDTH * HEIGHT - 1)
+	if (turnCount == WIDTH * HEIGHT - 1)
 	{
 		printf("DRAW GAME");
 		return 1;
@@ -202,9 +244,9 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 
 void NewLineAndIndent()
 {
-	printf("\n\t\t\t");
-	for (int i = 0; i < WIDTH - 1; i++)
-		printf(" ");
+	printf("\n\t\t\t ");
+	for (int i = 0; i < WIDTH - 3; i++)
+		printf("   ");
 }
 
 
@@ -213,10 +255,10 @@ void Display(char **board)
 	int i,j;
 
 	NewLineAndIndent();
-	printf("%sTIC     TAC     MOE%s\n\n", CYN, RESET);
+	printf("%s-- MATCH  CHAMPS --%s\n", CYN, RESET);
 	
 	NewLineAndIndent();
-	printf(" Length to win : %s%d%s\n\n", GRN, WINLENGTH, RESET);
+	printf("   Match %s%d%s to win\n\n", GRN, WINLENGTH, RESET);
 
 	for (i = 0; i < HEIGHT; i++)
 	{
