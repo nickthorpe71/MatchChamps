@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<time.h>
 
 struct gameBoardCell 
 {
@@ -7,7 +8,7 @@ struct gameBoardCell
 	int positionWidth;
 	char character;
 }
-inputValue();
+getUserInput();
 
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
@@ -21,27 +22,41 @@ inputValue();
 const char P1TOKEN = '1';
 const char P2TOKEN = '2';
 
-const int WINLENGTH = 3;
-const int HEIGHT = 6;
-const int WIDTH = 3;
+int WINLENGTH = 3;
+int HEIGHT = 3;
+int WIDTH = 3;
+int CURRENTLEVEL = 0;
 
 void run();
 void Display(char**);
+void calculateNewGameConditions();
 int checkBoard(char**, char, int);
 char **initializeBoard();
+struct gameBoardCell getRandomAIInput(char**);
 
 int main() 
 {
-	int levelCount = 0;
+	time_t t;
+
+	/* Intializes random number generator */
+   	srand((unsigned) time(&t));
+
 	char continuePrompt;
 	again:
 	run();
-	
 	printf("\nType 'n' and press enter to continue\nor anything else and enter to quit: ");
 	scanf("%s", &continuePrompt);
+
 	if(continuePrompt == 'n')
 	{
-		system("cls");
+		if (CURRENTLEVEL == 9)
+		{
+			printf("\nYou've WON!\nPress any key and enter to exit the game");
+			scanf("%s", &continuePrompt);
+			exit(0);
+		}
+		calculateNewGameConditions();	
+		system("clear");
 		goto again;
 	}	
 	else
@@ -60,7 +75,11 @@ void run()
 	Display(board);
 	
 	nextTurn:
-	cellInfo = inputValue(board, turnCount);
+	// Check if its users turn or AIs turn
+	if (turnCount % 2 == 0) // if players turn
+		cellInfo = getUserInput(board, turnCount);
+	else // if AI turn
+		cellInfo = getRandomAIInput(board);
 	board[cellInfo.positionHeight][cellInfo.positionWidth] = cellInfo.character;
 	system("clear");
 	Display(board);
@@ -78,6 +97,26 @@ void run()
 		turnCount++;
 		goto nextTurn;
 	}
+}
+
+void calculateNewGameConditions()
+{
+	CURRENTLEVEL++;
+
+	int increaseHeightOrWidth = rand() % 2;
+	if (WIDTH - HEIGHT > 1)
+		HEIGHT++;
+	else if (HEIGHT - WIDTH > 1)
+		WIDTH++;
+       	else if (increaseHeightOrWidth == 0)	
+		HEIGHT++;
+	else
+		WIDTH++;
+
+	if (WIDTH > WINLENGTH && HEIGHT > WINLENGTH && (WIDTH + HEIGHT + 1 > (WINLENGTH + 1) * 2))
+		WINLENGTH++;
+
+	// also add ai difficulty improvement
 }
 
 char **initializeBoard()
@@ -217,8 +256,28 @@ int checkBoard(char **board, char input, int turnCount)
 	return 0;
 }
 
+struct gameBoardCell getRandomAIInput(char** board)
+{
+	struct gameBoardCell cellInfo;
+
+	int randHeight = rand() % HEIGHT;
+	int randWidth = rand() % WIDTH;
+
+	while (board[randHeight][randWidth] == '1' || board[randHeight][randWidth] == '2')
+	{
+		randHeight = rand() % HEIGHT;
+		randWidth = rand() % WIDTH;
+	}
+
+	cellInfo.positionHeight = randHeight;
+	cellInfo.positionWidth = randWidth;
+	cellInfo.character = P2TOKEN;
+	
+	return cellInfo;
+}
+
 // Take user input
-struct gameBoardCell inputValue(char **board, int turnCount)
+struct gameBoardCell getUserInput(char **board, int turnCount)
 {
 	int i, j;
 	char value;
@@ -265,9 +324,9 @@ struct gameBoardCell inputValue(char **board, int turnCount)
 	return cellInfo;
 }
 
-void NewLineAndIndent()
+void Indent()
 {
-	printf("\n\t\t\t ");
+	printf("\t\t\t ");
 	for (int i = 0; i < WIDTH - 3; i++)
 		printf("   ");
 }
@@ -277,10 +336,12 @@ void Display(char **board)
 {
 	int i,j;
 
-	NewLineAndIndent();
-	printf("%s-- MATCH  CHAMPS --%s\n", CYN, RESET);
+	Indent();
+	printf("%s-- MATCH  CHAMPS --%s\n\n", CYN, RESET);
 	
-	NewLineAndIndent();
+	Indent();
+	printf("      Level %s%d%s\n", YEL, CURRENTLEVEL + 1, RESET); 
+	Indent();
 	printf("   Match %s%d%s to win\n\n", GRN, WINLENGTH, RESET);
 
 	for (i = 0; i < HEIGHT; i++)
