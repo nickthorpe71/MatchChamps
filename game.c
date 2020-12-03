@@ -22,16 +22,16 @@ struct gameBoardCell
 const char HUMANTOKEN = '1';
 const char AITOKEN = '2';
 
-int WINLENGTH = 2;
-int HEIGHT = 2;
-int WIDTH = 2;
+int WINLENGTH = 3;
+int HEIGHT = 3;
+int WIDTH = 3;
 int CURRENTLEVEL = 0;
 
 void run();
 char **initializeBoard();
 void Display(char **);
 void calculateNewGameConditions();
-int checkVictory(char **, char);
+int checkVictory(char **);
 int isCellEmpty(char);
 struct gameBoardCell getRandomAIInput(char **);
 struct gameBoardCell aiMove(char **, char);
@@ -87,7 +87,7 @@ nextTurn:
   board[nextMove.heightPosition][nextMove.widthPosition] = nextMove.playerToken;
   system("clear");
   Display(board);
-  int checkWinner = checkVictory(board, nextMove.playerToken);
+  int checkWinner = checkVictory(board);
   if (checkWinner != 0)
   {
     // free board memory
@@ -154,117 +154,149 @@ char **initializeBoard()
   return board;
 }
 
-int checkIfPlayerWon(int score, char input)
-{
-  if (score >= WINLENGTH)
-  {
-    if (input == HUMANTOKEN)
-      return 1; // P1 (Human) Wins
-    return 2;   // P2 (AI) Wins
-  }
-
-  return 0;
-}
-
-int checkVictory(char **board, char playerToken)
+int checkVictory(char **board)
 {
   int i, j, k;
 
-  int rowCounter = 0;
-  int columnCounter = 0;
+  int rowCounterHu = 0;
+  int columnCounterHu = 0;
+  int upLeftCounterHu = 0;
+  int upRightCounterHu = 0;
+  int downLeftCounterHu = 0;
+  int downRightCounterHu = 0;
 
-  int upLeftCounter = 0;
-  int upRightCounter = 0;
-  int downLeftCounter = 0;
-  int downRightCounter = 0;
+  int rowCounterAI = 0;
+  int columnCounterAI = 0;
+  int upLeftCounterAI = 0;
+  int upRightCounterAI = 0;
+  int downLeftCounterAI = 0;
+  int downRightCounterAI = 0;
 
   int occupiedCellCount = 0;
 
   // Check for column matches
   for (i = 0; i < WIDTH; i++)
   {
-    columnCounter = 0;
+    columnCounterHu = 0;
+    columnCounterAI = 0;
 
     for (j = 0; j < HEIGHT; j++)
     {
-      if (board[j][i] == playerToken)
-        columnCounter++;
+      if (board[j][i] == HUMANTOKEN)
+        columnCounterHu++;
       else
-        columnCounter = 0;
+        columnCounterHu = 0;
+      if (board[j][i] == AITOKEN)
+        columnCounterAI++;
+      else
+        columnCounterAI = 0;
 
-      if (checkIfPlayerWon(columnCounter, playerToken) == 1)
-        return 1;
+      if (columnCounterHu == WINLENGTH)
+        return 1; // (Human) Wins
+      if (columnCounterAI == WINLENGTH)
+        return 2; // (AI) Wins
     }
   }
 
   for (i = 0; i < HEIGHT; i++)
   {
-    rowCounter = 0;
+    rowCounterHu = 0;
+    rowCounterAI = 0;
 
     for (j = 0; j < WIDTH; j++)
     {
-      upLeftCounter = 0;
-      upRightCounter = 0;
-      downLeftCounter = 0;
-      downRightCounter = 0;
+      upLeftCounterHu = 0;
+      upRightCounterHu = 0;
+      downLeftCounterHu = 0;
+      downRightCounterHu = 0;
+
+      upLeftCounterAI = 0;
+      upRightCounterAI = 0;
+      downLeftCounterAI = 0;
+      downRightCounterAI = 0;
 
       // Check for row match
-      if (board[i][j] == playerToken)
-        rowCounter++;
+      if (board[i][j] == HUMANTOKEN)
+        rowCounterHu++;
       else
-        rowCounter = 0;
+        rowCounterHu = 0;
+      if (board[i][j] == AITOKEN)
+        rowCounterAI++;
+      else
+        rowCounterAI = 0;
 
-      if (checkIfPlayerWon(rowCounter, playerToken))
-        return 1;
+      if (rowCounterHu == WINLENGTH)
+        return 1; // (Human) Wins
+      if (rowCounterAI == WINLENGTH)
+        return 2; // (AI) Wins
 
       for (k = 0; k < WINLENGTH; k++)
       {
         // Check up left diagonal match
         if (i - k >= 0 && j - k >= 0)
         {
-          if (board[i - k][j - k] == playerToken)
-            upLeftCounter++;
+          if (board[i - k][j - k] == HUMANTOKEN)
+            upLeftCounterHu++;
           else
-            upLeftCounter = 0;
+            upLeftCounterHu = 0;
+
+          if (board[i - k][j - k] == AITOKEN)
+            upLeftCounterAI++;
+          else
+            upLeftCounterAI = 0;
         }
         // Check up right diagonal match
         if (i - k >= 0 && j + k < WIDTH)
         {
-          if (board[i - k][j + k] == playerToken)
-            upRightCounter++;
+          if (board[i - k][j + k] == HUMANTOKEN)
+            upRightCounterHu++;
           else
-            upRightCounter = 0;
+            upRightCounterHu = 0;
+          if (board[i - k][j + k] == AITOKEN)
+            upRightCounterAI++;
+          else
+            upRightCounterAI = 0;
         }
         // Check down left diagonal match
         if (i + k < HEIGHT && j - k >= 0)
         {
-          if (board[i + k][j - k] == playerToken)
-            downLeftCounter++;
+          if (board[i + k][j - k] == HUMANTOKEN)
+            downLeftCounterHu++;
           else
-            downLeftCounter = 0;
+            downLeftCounterHu = 0;
+          if (board[i + k][j - k] == AITOKEN)
+            downLeftCounterAI++;
+          else
+            downLeftCounterAI = 0;
         }
         // Check down right diagonal match
         if (i + k < HEIGHT && j + k < WIDTH)
         {
-          if (board[i + k][j + k] == playerToken)
-            downRightCounter++;
+          if (board[i + k][j + k] == HUMANTOKEN)
+            downRightCounterHu++;
           else
-            downRightCounter = 0;
+            downRightCounterHu = 0;
+          if (board[i + k][j + k] == AITOKEN)
+            downRightCounterAI++;
+          else
+            downRightCounterAI = 0;
         }
       }
-      if (upLeftCounter >= WINLENGTH || upRightCounter >= WINLENGTH || downLeftCounter >= WINLENGTH || downRightCounter >= WINLENGTH)
+      if (upLeftCounterHu >= WINLENGTH || upRightCounterHu >= WINLENGTH || downLeftCounterHu >= WINLENGTH || downRightCounterHu >= WINLENGTH)
       {
-        if (playerToken == HUMANTOKEN)
-          return 1; // P1 (Human) Wins
-        return 2;   // P2 (AI) Wins
+        return 1; // (Human) Wins
+      }
+      if (upLeftCounterAI >= WINLENGTH || upRightCounterAI >= WINLENGTH || downLeftCounterAI >= WINLENGTH || downRightCounterAI >= WINLENGTH)
+      {
+        return 2; // (AI) Wins
       }
     }
   }
 
   // Check draw
-  for (i = 0; i < WIDTH; i++)
-    for (j = 0; j < HEIGHT; j++)
-      if (isCellEmpty(board[i][j]) == 0)
+  for (i = 0; i < HEIGHT; i++)
+    for (j = 0; j < WIDTH; j++)
+      if (isCellEmpty(board[i][j]) == 1)
         occupiedCellCount++;
 
   if (occupiedCellCount == WIDTH * HEIGHT)
@@ -291,7 +323,7 @@ struct gameBoardCell aiMove(char **board, char playerToken)
 // MINIMAX
 struct gameBoardCell miniMaxBestMove(char **board, char playerToken)
 {
-  printf("------- new func call -------\n");
+  // printf("------- new func call -------\n");
   int i, j;
 
   struct gameBoardCell moves[HEIGHT * WIDTH + 1];
@@ -303,22 +335,22 @@ struct gameBoardCell miniMaxBestMove(char **board, char playerToken)
 
   // Base case
   // Check to see if game has been won or ended in draw
-  int gameStatus = checkVictory(board, playerToken);
+  int gameStatus = checkVictory(board);
   if (gameStatus == 1) // player won
   {
     tempMove.score = -10;
-    printf("P WIN - Score: %d\n", tempMove.score);
+    // printf("P WIN - Score: %d\n", tempMove.score);
     return tempMove;
   }
   else if (gameStatus == 2) // ai won
   {
     tempMove.score = 10;
-    printf("AI WIN - Score: %d\n", tempMove.score);
+    // printf("AI WIN - Score: %d\n", tempMove.score);
     return tempMove;
   }
   else if (gameStatus == 3) // game is a draw
   {
-    printf("DRAW - Score: %d\n", tempMove.score);
+    // printf("DRAW - Score: %d\n", tempMove.score);
     return tempMove;
   }
 
@@ -355,15 +387,12 @@ struct gameBoardCell miniMaxBestMove(char **board, char playerToken)
 
         // push the object to the array
         moves[moveCount] = nextMove;
+        moveCount++;
       }
     }
   }
 
-  printf("score:%d\n", moves[0].score);
-  printf("height:%d\n", moves[0].heightPosition);
-  printf("width:%d\n", moves[0].widthPosition);
-  printf("token:%c\n", moves[0].playerToken);
-
+  // Check for best move
   int bestMoveIndex = 0;
   if (playerToken == AITOKEN)
   {
