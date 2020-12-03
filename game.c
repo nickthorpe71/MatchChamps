@@ -22,9 +22,9 @@ struct gameBoardCell
 const char HUMANTOKEN = '1';
 const char AITOKEN = '2';
 
-int WINLENGTH = 3;
-int HEIGHT = 3;
-int WIDTH = 3;
+int WINLENGTH = 2;
+int HEIGHT = 2;
+int WIDTH = 2;
 int CURRENTLEVEL = 0;
 
 void run();
@@ -35,7 +35,7 @@ int checkVictory(char **, char);
 int isCellEmpty(char);
 struct gameBoardCell getRandomAIInput(char **);
 struct gameBoardCell aiMove(char **, char);
-struct gameBoardCell miniMaxBestMove(char **, char, struct gameBoardCell *, int);
+struct gameBoardCell miniMaxBestMove(char **, char);
 
 int main()
 {
@@ -284,86 +284,112 @@ int isCellEmpty(char token)
 
 struct gameBoardCell aiMove(char **board, char playerToken)
 {
-
-  struct gameBoardCell *moves;
-  moves = (struct gameBoardCell *)malloc(sizeof(struct gameBoardCell) * 300000);
-  int moveCount = 0;
-
-  struct gameBoardCell bestMove = miniMaxBestMove(board, AITOKEN, moves, moveCount);
-
-  free(moves);
+  struct gameBoardCell bestMove = miniMaxBestMove(board, AITOKEN);
   return bestMove;
 }
 
 // MINIMAX
-struct gameBoardCell miniMaxBestMove(char **board, char playerToken, struct gameBoardCell *moves, int moveCount)
+struct gameBoardCell miniMaxBestMove(char **board, char playerToken)
 {
+  printf("------- new func call -------\n");
   int i, j;
 
-  struct gameBoardCell nextMove;
-  nextMove.playerToken = playerToken;
-  nextMove.score = 0;
+  struct gameBoardCell moves[HEIGHT * WIDTH + 1];
+  int moveCount = 0;
+
+  struct gameBoardCell tempMove;
+  tempMove.playerToken = playerToken;
+  tempMove.score = 0;
 
   // Base case
   // Check to see if game has been won or ended in draw
   int gameStatus = checkVictory(board, playerToken);
   if (gameStatus == 1) // player won
   {
-    nextMove.score = -10;
-    return nextMove;
+    tempMove.score = -10;
+    printf("P WIN - Score: %d\n", tempMove.score);
+    return tempMove;
   }
   else if (gameStatus == 2) // ai won
   {
-    nextMove.score = 10;
-    return nextMove;
+    tempMove.score = 10;
+    printf("AI WIN - Score: %d\n", tempMove.score);
+    return tempMove;
   }
-  else if (gameStatus == 3 || moveCount == 280000) // game is a draw or we cant search further into the future
+  else if (gameStatus == 3) // game is a draw
   {
-    return nextMove;
+    printf("DRAW - Score: %d\n", tempMove.score);
+    return tempMove;
   }
 
   // Find possible moves
   for (i = 0; i < HEIGHT; i++)
+  {
     for (j = 0; j < WIDTH; j++)
     {
       if (isCellEmpty(board[i][j]) == 0)
       {
+        struct gameBoardCell nextMove;
+        nextMove.playerToken = playerToken;
+
         nextMove.heightPosition = i;
         nextMove.widthPosition = j;
 
         char tempHolder = board[i][j];
 
         board[i][j] = playerToken;
+
+        /*collect the score resulted from calling minimax 
+      on the opponent of the current player*/
         if (playerToken == AITOKEN)
-          nextMove.score = miniMaxBestMove(board, HUMANTOKEN, moves, moveCount).score;
-        else
-          nextMove.score = miniMaxBestMove(board, AITOKEN, moves, moveCount).score;
+        {
+          nextMove.score = miniMaxBestMove(board, HUMANTOKEN).score;
+        }
+        else if (playerToken == HUMANTOKEN)
+        {
+          nextMove.score = miniMaxBestMove(board, AITOKEN).score;
+        }
 
-        moves[moveCount] = nextMove;
-        moveCount++;
-
+        // reset the spot to empty
         board[i][j] = tempHolder;
+
+        // push the object to the array
+        moves[moveCount] = nextMove;
       }
     }
+  }
 
-  // Select best move
+  printf("score:%d\n", moves[0].score);
+  printf("height:%d\n", moves[0].heightPosition);
+  printf("width:%d\n", moves[0].widthPosition);
+  printf("token:%c\n", moves[0].playerToken);
+
   int bestMoveIndex = 0;
   if (playerToken == AITOKEN)
   {
-    int bestScore = -4000000;
+    int bestScore = -10000;
     for (i = 0; i < moveCount; i++)
+    {
       if (moves[i].score > bestScore)
+      {
+        bestScore = moves[i].score;
         bestMoveIndex = i;
+      }
+    }
   }
   else
   {
-    int bestScore = 4000000;
+    int bestScore = 10000;
     for (i = 0; i < moveCount; i++)
+    {
       if (moves[i].score < bestScore)
+      {
+        bestScore = moves[i].score;
         bestMoveIndex = i;
+      }
+    }
   }
 
-  // Return the best move
   return moves[bestMoveIndex];
 }
 
