@@ -52,15 +52,21 @@ again:
 
   if (continuePrompt == 'n')
   {
-    if (CURRENTLEVEL == 9)
-    {
-      printf("\nYou've WON!\nPress any key and enter to exit the game");
-      scanf("%s", &continuePrompt);
-      exit(0);
-    }
-    calculateNewGameConditions();
+
+    printf("\nYou've WON!\nPress any key and enter to exit the game");
+    scanf("%s", &continuePrompt);
+    exit(0);
     system("clear");
     goto again;
+
+    // if (CURRENTLEVEL == 9)
+    // {
+    //   printf("\nYou've WON!\nPress any key and enter to exit the game");
+    //   scanf("%s", &continuePrompt);
+    //   exit(0);
+    // }
+    // calculateNewGameConditions();
+    
   }
   else
   {
